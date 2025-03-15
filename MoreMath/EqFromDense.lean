@@ -7,7 +7,7 @@ open Real Filter Topology
 -- then they coincide everywhere
 
 -- Remark : It'd be useful to generalize this to intervals or subsets in ℝ
--- But one might have to use other API's than DenselyOrdered
+-- But one might have to use other API's than Dense
 
 theorem eq_of_eq_of_dense_of_mono_of_continuous
     [TopologicalSpace α]
