@@ -110,21 +110,4 @@ theorem eq_of_eq_of_dense_of_mono_of_continuous
 
 -- If two continuous functions coincide over a dense set in ℝ
 -- then they coincide everywhere
--- proof TODO but should be easier
-
-theorem eq_of_eq_of_dense_of_continuous
-    [TopologicalSpace α]
-    [ConditionallyCompleteLinearOrder α]
-    [OrderTopology α]
-    [DenselyOrdered α]
-    [NoMinOrder α]
-    [NoMaxOrder α]
-    [FirstCountableTopology α]
-    (f g : α → α)
-    (s : Set α)
-    (hs : Dense s)
-    (hf : Continuous f)
-    (hg : Continuous g)
-    (h : ∀ x ∈ s, f x = g x) : ∀ x, f x = g x := by
-  intro x
-  sorry
+-- exists in mathlib as  DenseRange.equalizer  / Dense.denseRange_val
