@@ -24,6 +24,7 @@ theorem le_argmin {α β : Type _} [LinearOrder β] (f : α → β) (s : Finset 
   have h := (image f s).isLeast_min' (by simp [H])
   simpa [lowerBounds, apply_argmin f s H] using h.2
 
+
 -- monoLabelOn API
 
 -- if (x_i) is indexed over a set s,
@@ -42,10 +43,12 @@ theorem le_argmin {α β : Type _} [LinearOrder β] (f : α → β) (s : Finset 
 -- which thereby provides a strict mono indexing of the elements of a set
 
 
--- The idea to construct φ is to pick the i of the smallest x_i
---    then pick the i of the next smallest x_i, etc...
+
+-- The idea to construct φ is to pick the index i of the smallest x_i
+--    then pick the index i of the next smallest x_i, etc...
 -- So φ(i0+n) is defined as the index of the (n+1)th-smallest x_i in s
 -- i.e. the index of the smallest x_i in s \ {n previous answers}
+
 noncomputable def monoLabelOn
     {α ι : Type _} [Zero α] [LinearOrder α] [Zero ι] [DecidableEq ι]
     (x : ι → α) (s : Finset ι) (i0 : ℕ) : ℕ → ι :=
@@ -195,11 +198,14 @@ theorem strictMonoOn_comp_monoLabelOn_of_injOn
     specialize h2 hi hj c1
     omega
 
+-- this is the inverse map, mapping an s-index back to {i0, i0+1,...,i0+#s}
 noncomputable def invMonoLabelOn
     {α ι : Type _} [Zero α] [LinearOrder α] [Zero ι] [DecidableEq ι]
     (x : ι → α) (s : Finset ι) (i0 : ℕ) : ι → ℕ := (monoLabelOn x s i0).invFunOn (Ico i0 (i0 + #s))
 
 
+
+-- monoLabel is a special case, and indexes elements of a set starting at i0
 
 noncomputable def monoLabel
     {α : Type _} [Zero α] [LinearOrder α]
@@ -219,6 +225,3 @@ theorem bijOn_monoLabel
     {α : Type _} [Zero α] [LinearOrder α]
     (s : Finset α) i0 : Set.BijOn (monoLabel s i0) (Ico i0 (i0 + #s)) s := by
   simpa using bijOn_monoLabelOn id s i0
-
-
-
