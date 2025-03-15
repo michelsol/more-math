@@ -27,6 +27,9 @@ theorem le_argmin {α β : Type _} [LinearOrder β] (f : α → β) (s : Finset 
 
 -- monoLabelOn API
 
+-- The next lemmas are useful when one needs to index and sort the elements of a set / collection / sequence
+
+
 -- if (x_i) is indexed over a set s,
 -- then φ = monoLabelOn x s i0 provides a sorted reindexing of x from {i0, i0+1,...,i0+#s} to x(s).
 
@@ -38,6 +41,7 @@ theorem le_argmin {α β : Type _} [LinearOrder β] (f : α → β) (s : Finset 
 
 -- Additionally if x is injective, strictMonoOn_comp_monoLabelOn_of_injOn says that
 -- the ordering is strict x_{φ_1} < x_{φ_2} < ... < x_{φ_{#s}}
+
 
 -- monoLabelOn gives rise to monoLabel which uses x = identity
 -- which thereby provides a strict mono indexing of the elements of a set
