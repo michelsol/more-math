@@ -2,6 +2,13 @@ import Mathlib
 
 open Real Filter Topology
 
+-- if two functions coincide over a dense set in ℝ
+-- and one is continuous and the other is monotone
+-- then they coincide everywhere
+
+-- Remark : It'd be useful to generalize this to intervals or subsets in ℝ
+-- But one might have to use other API's than DenselyOrdered
+
 theorem eq_of_eq_of_dense_of_mono_of_continuous
     [TopologicalSpace α]
     [ConditionallyCompleteLinearOrder α]
@@ -100,6 +107,10 @@ theorem eq_of_eq_of_dense_of_mono_of_continuous
   have h6 : g x ≤ f x := le_of_eq_of_le h1.symm h3
   exact le_antisymm h5 h6
 
+
+-- If two continuous functions coincide over a dense set in ℝ
+-- then they coincide everywhere
+-- proof TODO but should be easier
 
 theorem eq_of_eq_of_dense_of_continuous
     [TopologicalSpace α]
