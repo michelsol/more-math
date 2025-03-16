@@ -4,8 +4,8 @@ import Mathlib
 open Finset
 
 
--- when summing over a monotone sequence
--- smallest sum is left, while biggest sum is right
+-- when summing a fixed number of terms in a monotone sequence
+-- smallest sum is on the left
 
 theorem sum_Ico_card_le_sum_of_monotoneOn
     {α : Type _} [Preorder α] [AddCommMonoid α] [AddLeftMono α]
@@ -40,6 +40,9 @@ theorem sum_Ico_card_le_sum_of_monotoneOn
       (by simp [card_sdiff h1]; omega)
     exact add_le_add ih h2
 
+-- when summing a fixed number of terms in a monotone sequence
+-- largest sum is on the right
+
 theorem sum_le_sum_Icc_card_of_monotoneOn
     {α : Type _} [Preorder α] [AddCommMonoid α] [AddLeftMono α]
     (a b : ℕ) (s : Finset ℕ) (hs : s ⊆ Icc a b) (f : ℕ → α) (hf : MonotoneOn f (Icc a b)) :
@@ -72,5 +75,3 @@ theorem sum_le_sum_Icc_card_of_monotoneOn
       (by intro k hk; simp at hk; exact hs hk.1)
       (by simp [card_sdiff h1]; omega)
     exact add_le_add ih h2
-
-
