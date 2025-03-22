@@ -218,7 +218,7 @@ noncomputable def invsortOn
 
 
 
--- sortSet is a special case, and indexes elements of a set starting at i0
+-- sortSet indexes elements of a set starting at i0
 
 noncomputable def sortSet
     {α : Type _} [Zero α] [LinearOrder α]
