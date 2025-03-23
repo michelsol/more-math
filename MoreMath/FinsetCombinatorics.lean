@@ -27,20 +27,20 @@ noncomputable def funOn {α β : Type _} [DecidableEq α] [Zero β] (s : Finset 
   letI := Fintype.ofFinite F
   F.toFinset
 
-theorem mem_funOn_iff {α β : Type _} [DecidableEq α] [Zero β] {s : Finset α} {t : Finset β}
+theorem mem_funOn {α β : Type _} [DecidableEq α] [Zero β] {s : Finset α} {t : Finset β}
     (f : α → β) : f ∈ funOn s t ↔ ∀ x, if x ∈ s then f x ∈ t else f x = 0 := by
   simp [funOn]
 
-theorem mem_funOn_iff' {α β : Type _} [DecidableEq α] [Zero β] {s : Finset α} {t : Finset β}
+theorem mem_funOn' {α β : Type _} [DecidableEq α] [Zero β] {s : Finset α} {t : Finset β}
     (f : α → β) : f ∈ funOn s t ↔ (∀ x ∈ s, f x ∈ t) ∧ ∀ x ∉ s, f x = 0 := by
   constructor
   . intro hf
     split_ands <;> intro x hx
     all_goals
-      simp only [mem_funOn_iff] at hf
+      simp only [mem_funOn] at hf
       simpa [hx] using hf x
   . intro ⟨hf1, hf2⟩
-    simp only [mem_funOn_iff]
+    simp only [mem_funOn]
     intro x
     by_cases hx : x ∈ s <;> simp [hx]
     . simp [hf1 x hx]
@@ -55,7 +55,7 @@ def funOn_equiv_product_sdiff {α β : Type _} [DecidableEq α] [Zero β]
   funOn s t ≃ (funOn (s \ {x0}) t) ×ˢ t := {
       toFun := λ ⟨f, hf⟩ ↦ ⟨⟨λ x ↦ if x = x0 then 0 else f x, f x0⟩, by
         replace hf := by simpa [funOn] using hf
-        simp only [mem_product, mem_funOn_iff]
+        simp only [mem_product, mem_funOn]
         split_ands
         . intro x
           specialize hf x
@@ -65,7 +65,7 @@ def funOn_equiv_product_sdiff {α β : Type _} [DecidableEq α] [Zero β]
       invFun := λ ⟨⟨g, y0⟩, hg⟩ =>
         ⟨λ x ↦ if x = x0 then y0 else g x, by
           obtain ⟨hg, hy0⟩ := by simpa [funOn] using hg
-          simp only [mem_funOn_iff]
+          simp only [mem_funOn]
           intro x
           specialize hg x
           by_cases hx : x ∈ s <;> by_cases hx2 : x = x0
@@ -107,10 +107,11 @@ theorem card_funOn {α β : Type _} [DecidableEq α] [Zero β] (s : Finset α) (
 
 
 -- Bijections between finite sets
-noncomputable def bijOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] (s : Finset α) (t : Finset β) :=
+noncomputable def bijOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β]
+    (s : Finset α) (t : Finset β) : Finset (α → β) :=
   {f ∈ funOn s t | Set.BijOn f s t}
 
-theorem mem_bijOn_iff {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] {s : Finset α} {t : Finset β}
+theorem mem_bijOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] {s : Finset α} {t : Finset β}
     (f : α → β) : f ∈ bijOn s t ↔ (f ∈ funOn s t ∧ Set.BijOn f s t) := by
   simp [bijOn]
 
@@ -121,8 +122,8 @@ def bijOn_equiv_sigma_sdiff {α β : Type _} [DecidableEq α] [DecidableEq β] [
     (s : Finset α) (t : Finset β) {x0 : α} (hx0 : x0 ∈ s) :
   bijOn s t ≃ t.sigma λ y ↦ bijOn (s \ {x0}) (t \ {y}) := {
       toFun := λ ⟨f, hf⟩ ↦ ⟨⟨f x0, λ x ↦ if x = x0 then 0 else f x⟩, by
-        obtain ⟨hf1, hf2⟩ := by simpa [bijOn, funOn] using hf
-        simp only [mem_sigma, mem_bijOn_iff, mem_funOn_iff]
+        obtain ⟨hf1, hf2⟩ := by simpa [mem_bijOn, mem_funOn] using hf
+        simp only [mem_sigma, mem_bijOn, mem_funOn]
         split_ands
         . simpa [hx0] using hf1 x0
         . intro x
@@ -159,8 +160,8 @@ def bijOn_equiv_sigma_sdiff {α β : Type _} [DecidableEq α] [DecidableEq β] [
           . simp [hxx0, hx2]⟩
       invFun := λ ⟨⟨y0, f⟩, hyf⟩ ↦ ⟨λ x ↦ if x = x0 then y0 else f x, by
         obtain ⟨hy0, hf⟩ := by simpa using hyf
-        obtain ⟨hf, hf2⟩ := by simpa [bijOn, funOn] using hf
-        simp only [mem_bijOn_iff, mem_funOn_iff]
+        obtain ⟨hf, hf2⟩ := by simpa [mem_bijOn, mem_funOn] using hf
+        simp only [mem_bijOn, mem_funOn]
         split_ands
         . intro x
           specialize hf x
@@ -199,7 +200,7 @@ def bijOn_equiv_sigma_sdiff {α β : Type _} [DecidableEq α] [DecidableEq β] [
       right_inv := by
         intro ⟨⟨y, f⟩, hyf⟩
         obtain ⟨hy0, hf⟩ := by simpa using hyf
-        obtain ⟨hf, hf2⟩ := by simpa [bijOn, funOn] using hf
+        obtain ⟨hf, hf2⟩ := by simpa [mem_bijOn, mem_funOn] using hf
         simp [Function.RightInverse, Function.LeftInverse]
         ext x
         specialize hf x
@@ -236,10 +237,11 @@ theorem card_bijOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] 
 
 
 -- Injections between finite sets
-noncomputable def injOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] (s : Finset α) (t : Finset β) :=
+noncomputable def injOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β]
+    (s : Finset α) (t : Finset β) : Finset (α → β) :=
   {f ∈ funOn s t | Set.InjOn f s}
 
-theorem mem_injOn_iff {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] {s : Finset α} {t : Finset β}
+theorem mem_injOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] {s : Finset α} {t : Finset β}
     (f : α → β) : f ∈ injOn s t ↔ (f ∈ funOn s t ∧ Set.InjOn f s) := by
   simp [injOn]
 
@@ -251,8 +253,8 @@ def injOn_equiv_sigma_sdiff {α β : Type _} [DecidableEq α] [DecidableEq β] [
     (s : Finset α) (t : Finset β) {x0 : α} (hx0 : x0 ∈ s) :
   injOn s t ≃ t.sigma λ y ↦ injOn (s \ {x0}) (t \ {y}) := {
       toFun := λ ⟨f, hf⟩ ↦ ⟨⟨f x0, λ x ↦ if x = x0 then 0 else f x⟩, by
-        obtain ⟨hf1, hf2⟩ := by simpa [injOn, funOn] using hf
-        simp only [mem_sigma, mem_injOn_iff, mem_funOn_iff]
+        obtain ⟨hf1, hf2⟩ := by simpa [mem_injOn, mem_funOn] using hf
+        simp only [mem_sigma, mem_injOn, mem_funOn]
         split_ands
         . simpa [hx0] using hf1 x0
         . intro x
@@ -270,8 +272,8 @@ def injOn_equiv_sigma_sdiff {α β : Type _} [DecidableEq α] [DecidableEq β] [
           exact hf2 (by simpa using hx) (by simpa using hx') h⟩
       invFun := λ ⟨⟨y0, f⟩, hyf⟩ ↦ ⟨λ x ↦ if x = x0 then y0 else f x, by
         obtain ⟨hy0, hf⟩ := by simpa using hyf
-        obtain ⟨hf, hf2⟩ := by simpa [injOn, funOn] using hf
-        simp only [mem_injOn_iff, mem_funOn_iff]
+        obtain ⟨hf, hf2⟩ := by simpa [mem_injOn, mem_funOn] using hf
+        simp only [mem_injOn, mem_funOn]
         split_ands
         . intro x
           specialize hf x
@@ -357,30 +359,81 @@ theorem card_injOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] 
       _ = (n + 1) ! / (n + 1 - m) ! := rfl
 
 
--- WIP
--- Given a finite set t and k ≤ #t
+-- Given a finite set t
 -- choosing an injection [1,k] → t, is equivalent to
 -- choosing a set s of size k in t, together with an injection [1,k] → s
 def injOn_equiv_sigma_powerset_with_card {β : Type _} [DecidableEq β] [Zero β]
-    (t : Finset β) (k : ℕ) (hk : k ≤ #t) :
-  injOn (Icc 1 k) t ≃ { s ∈ t.powerset | #s = k }.sigma λ s ↦ injOn (Icc 1 k) s := {
-    toFun := λ ⟨f, h⟩ ↦ ⟨⟨(Icc 1 k).image f, f⟩, by
-      simp only [mem_sigma]
-      simp only [mem_injOn_iff, mem_funOn_iff] at h ⊢
+    (t : Finset β) (k : ℕ) :
+    injOn (Icc 1 k) t ≃ { s ∈ t.powerset | #s = k }.sigma λ s ↦ injOn (Icc 1 k) s :=
+  {
+    toFun := λ ⟨f, hf⟩ ↦ ⟨⟨(Icc 1 k).image f, f⟩, by
+      simp only [mem_sigma, mem_filter, mem_powerset, mem_injOn, mem_funOn]
+      obtain ⟨h1, h2⟩ := by simpa only [mem_injOn, mem_funOn] using hf
       split_ands
-      . sorry
-      . sorry
-      . sorry
-      ⟩
+      . intro y hy
+        obtain ⟨x, hx, hx2⟩ := by simpa only [mem_image] using hy
+        subst hx2
+        simpa [hx] using h1 x
+      . simp [card_image_of_injOn h2]
+      . intro x
+        by_cases hx : x ∈ Icc 1 k
+        . simp [hx]; simp at hx; use x
+        . simpa [hx] using h1 x
+      . exact h2⟩
     invFun := λ ⟨⟨s, f⟩, h⟩ ↦ ⟨f, by
-      simp [mem_injOn_iff, mem_funOn_iff] at h ⊢
-      sorry⟩
-    left_inv := by simp [LeftInverse]
+      obtain ⟨⟨h1, h1'⟩, h2, h3⟩ := by simpa only [mem_sigma, mem_filter, mem_powerset, mem_injOn, mem_funOn] using h
+      simp only [mem_injOn, mem_funOn]
+      split_ands
+      . intro x
+        specialize h2 x
+        by_cases hx : x ∈ Icc 1 k
+        . simp [hx] at h2 ⊢; simp [h1 h2]
+        . simp [hx] at h2 ⊢; simp [h2]
+      . exact h3⟩
+    left_inv := by intro ⟨f, hf⟩; simp
     right_inv := by
-      intro ⟨⟨s, f⟩, h1⟩
-      simp [Function.RightInverse, LeftInverse, mem_injOn_iff, mem_funOn_iff] at h1 ⊢
-      ext x
-      sorry
+      intro ⟨⟨s, f⟩, h⟩
+      obtain ⟨⟨h1, h1'⟩, h2, h3⟩ := by simpa only [mem_sigma, mem_filter, mem_powerset, mem_injOn, mem_funOn] using h
+      suffices (Icc 1 k).image f = s from by simpa
+      apply eq_of_subset_of_card_le
+      . intro y hy
+        obtain ⟨x, hx, hx2⟩ := by simpa only [mem_image] using hy
+        subst hx2
+        simpa [hx] using h2 x
+      . simp [card_image_of_injOn h3, h1']
   }
+
+
+-- The number of subsets with fixed size k (≤ n) in a set of size n, is  n choose k
+theorem card_subset_with_card_eq_choose {α : Type _} [DecidableEq α] [Zero α]
+    (t : Finset α) (k : ℕ) (hk : k ≤ #t) :
+    #{ s ∈ t.powerset | #s = k } = (#t).choose k := by
+  apply_fun (. * (k !))
+  swap
+  . apply mul_left_injective₀
+    apply factorial_ne_zero
+  calc
+    #{ s ∈ t.powerset | #s = k } * k ! = ∑ s ∈ t.powerset with #s = k, k ! := by simp
+    _ = ∑ s ∈ t.powerset with #s = k, #((Icc 1 k).injOn s) := by
+      apply sum_congr rfl
+      intro s hs
+      obtain ⟨hs1, hs2⟩ := by simpa only [mem_filter, mem_powerset] using hs
+      rw [card_injOn _ _ (by simp; omega)]
+      simp [hs2]
+    _ = #({ s ∈ t.powerset | #s = k }.sigma λ s ↦ injOn (Icc 1 k) s) := by simp
+    _ = #(injOn (Icc 1 k) t) := by
+      symm
+      apply card_eq_of_equiv
+      apply injOn_equiv_sigma_powerset_with_card
+    _ = (#t) ! / (#t - k) ! := by rw [card_injOn _ _ (by simpa using hk)]; simp
+    _ = (#t).choose k * k ! := by
+      suffices (#t).choose k * (k ! * (#t - k) !) = (#t) ! from by
+        rw [←mul_assoc] at this
+        apply (Nat.eq_div_of_mul_eq_left _ this).symm
+        apply factorial_ne_zero
+      rw [choose_eq_factorial_div_factorial hk]
+      apply Nat.div_mul_cancel
+      exact factorial_mul_factorial_dvd_factorial hk
+
 
 end Finset
