@@ -444,7 +444,27 @@ theorem card_subset_with_card_eq_choose {α : Type _} [DecidableEq α] [Zero α]
       apply Nat.div_mul_cancel
       exact factorial_mul_factorial_dvd_factorial hk
 
-
+theorem sum_Icc_choose_eq_two_pow (n : ℕ) : ∑ k ∈ Icc 0 n, n.choose k = 2 ^ n := calc
+    _ = ∑ k ∈ Icc 0 n, #{ s ∈ (Icc 1 n).powerset | #s = k } := by
+      apply sum_congr rfl
+      intro k hk
+      rw [card_subset_with_card_eq_choose _ _ (by simp at hk ⊢; omega)]
+      simp
+    _ = #((Icc 0 n).biUnion λ k ↦ { s ∈ (Icc 1 n).powerset | #s = k }) := by
+      rw [card_biUnion]
+      intro i hi j hj hij s hsi hsj r hrs
+      obtain ⟨hsi1, hsi2⟩ := by simpa only [mem_filter, mem_powerset] using hsi hrs
+      obtain ⟨hsj1, hsj2⟩ := by simpa only [mem_filter, mem_powerset] using hsj hrs
+      omega
+    _ = #((Icc 1 n).powerset) := by
+      congr 1
+      ext s
+      constructor <;> intro hs <;> simp at hs ⊢
+      . simp [hs]
+      . split_ands
+        . simpa using card_le_card hs
+        . exact hs
+    _ = 2 ^ n := by simp
 
 -- Surjections between finite sets
 noncomputable def surjOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β]
