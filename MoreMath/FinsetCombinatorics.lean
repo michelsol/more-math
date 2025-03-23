@@ -4,7 +4,7 @@ open Nat Function
 
 namespace Finset
 
-theorem card_eq_of_bijOn [Zero α] {s : Finset α} {t : Finset β} {f : α → β} (hf : Set.BijOn f s t) :
+theorem card_eq_card_of_set_bijOn {α β : Type _} [Zero α] {s : Finset α} {t : Finset β} {f : α → β} (hf : Set.BijOn f s t) :
     #s = #t := by
   apply card_eq_of_equiv
   exact {
@@ -14,7 +14,7 @@ theorem card_eq_of_bijOn [Zero α] {s : Finset α} {t : Finset β} {f : α → �
     right_inv := by intro ⟨y, hy⟩; simpa using hf.invOn_invFunOn.right hy
   }
 
--- Functions from a finite set to a finite set
+-- The finite set of functions from a finite set s to a finite set t. (mapping to zero elsewhere)
 noncomputable def funOn {α β : Type _} [DecidableEq α] [Zero β] (s : Finset α) (t : Finset β) : Finset (α → β) :=
   let F := {f : α → β | ∀ x, if x ∈ s then f x ∈ t else f x = 0}
   let g : F ≃ (s → t) := {
@@ -47,7 +47,7 @@ theorem mem_funOn' {α β : Type _} [DecidableEq α] [Zero β] {s : Finset α} {
     . simp [hf2 x hx]
 
 
--- Given x0 ∈ s,
+-- Given finite sets s t, and x0 ∈ s,
 -- choosing a function from s → t, is equivalent to
 -- choosing a function from s \ {x0} → t, and an element of t to assign to x0
 def funOn_equiv_product_sdiff {α β : Type _} [DecidableEq α] [Zero β]
@@ -86,7 +86,7 @@ def funOn_equiv_product_sdiff {α β : Type _} [DecidableEq α] [Zero β]
     }
 
 
--- There are #t ^ #s functions in s → t
+-- The number of s → t functions is #t ^ #s
 theorem card_funOn {α β : Type _} [DecidableEq α] [Zero β] (s : Finset α) (t : Finset β) :
     #(funOn s t) = #t ^ #s := by
   suffices ∀ n, #s = n → #(funOn s t) = #t ^ n from this #s rfl
@@ -115,9 +115,14 @@ theorem mem_bijOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] {
     (f : α → β) : f ∈ bijOn s t ↔ (f ∈ funOn s t ∧ Set.BijOn f s t) := by
   simp [bijOn]
 
+theorem card_eq_card_of_bijOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero α] [Zero β] {s : Finset α} {t : Finset β}
+    {f : α → β} (hf : f ∈ bijOn s t) : #s = #t := by
+  obtain ⟨hf1, hf2⟩ := by simpa [mem_bijOn] using hf
+  apply card_eq_card_of_set_bijOn hf2
+
 -- Given x0 ∈ s,
 -- choosing a bijection from s → t, is equivalent to
--- choosing an element y ∈ t to assign to x0, together with a bijection from s \ {x0} → t \ {f x0}
+-- choosing an element y ∈ t to assign to x0, together with a bijection from s \ {x0} → t \ {y}
 def bijOn_equiv_sigma_sdiff {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β]
     (s : Finset α) (t : Finset β) {x0 : α} (hx0 : x0 ∈ s) :
   bijOn s t ≃ t.sigma λ y ↦ bijOn (s \ {x0}) (t \ {y}) := {
@@ -209,7 +214,7 @@ def bijOn_equiv_sigma_sdiff {α β : Type _} [DecidableEq α] [DecidableEq β] [
     }
 
 
--- The number of bijections between two finite sets of size n is n!.
+-- The number of bijections between two finite sets of same size n is n!.
 theorem card_bijOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] (s : Finset α) (t : Finset β)
     {n : ℕ} (hs : #s = n) (ht : #t = n) : #(bijOn s t) = n ! := by
   induction' n with n ih generalizing s t
@@ -245,10 +250,14 @@ theorem mem_injOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] {
     (f : α → β) : f ∈ injOn s t ↔ (f ∈ funOn s t ∧ Set.InjOn f s) := by
   simp [injOn]
 
+theorem card_le_card_of_mem_injOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero α] [Zero β] {s : Finset α} {t : Finset β}
+    {f : α → β} (hf : f ∈ injOn s t) : #s ≤ #t := by
+  obtain ⟨⟨hf1, hf2⟩, hf3⟩ := by simpa [mem_injOn, mem_funOn'] using hf
+  exact card_le_card_of_injOn f hf1 hf3
 
 -- Given x0 ∈ s,
 -- choosing a injection from s → t, is equivalent to
--- choosing an element y ∈ t to assign to x0, together with an injection from s \ {x0} → t \ {f x0}
+-- choosing an element y ∈ t to assign to x0, together with an injection from s \ {x0} → t \ {y}
 def injOn_equiv_sigma_sdiff {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β]
     (s : Finset α) (t : Finset β) {x0 : α} (hx0 : x0 ∈ s) :
   injOn s t ≃ t.sigma λ y ↦ injOn (s \ {x0}) (t \ {y}) := {
@@ -359,7 +368,7 @@ theorem card_injOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] 
       _ = (n + 1) ! / (n + 1 - m) ! := rfl
 
 
--- Given a finite set t
+-- Given a finite set t,
 -- choosing an injection [1,k] → t, is equivalent to
 -- choosing a set s of size k in t, together with an injection [1,k] → s
 def injOn_equiv_sigma_powerset_with_card {β : Type _} [DecidableEq β] [Zero β]
@@ -404,7 +413,7 @@ def injOn_equiv_sigma_powerset_with_card {β : Type _} [DecidableEq β] [Zero β
   }
 
 
--- The number of subsets with fixed size k (≤ n) in a set of size n, is  n choose k
+-- The number of subsets with fixed size k ≤ n in a set of size n, is n choose k
 theorem card_subset_with_card_eq_choose {α : Type _} [DecidableEq α] [Zero α]
     (t : Finset α) (k : ℕ) (hk : k ≤ #t) :
     #{ s ∈ t.powerset | #s = k } = (#t).choose k := by
@@ -434,6 +443,22 @@ theorem card_subset_with_card_eq_choose {α : Type _} [DecidableEq α] [Zero α]
       rw [choose_eq_factorial_div_factorial hk]
       apply Nat.div_mul_cancel
       exact factorial_mul_factorial_dvd_factorial hk
+
+
+
+-- Surjections between finite sets
+noncomputable def surjOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β]
+    (s : Finset α) (t : Finset β) : Finset (α → β) :=
+  {f ∈ funOn s t | Set.SurjOn f s t}
+
+theorem mem_surjOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] {s : Finset α} {t : Finset β}
+    (f : α → β) : f ∈ surjOn s t ↔ (f ∈ funOn s t ∧ Set.SurjOn f s t) := by
+  simp [surjOn]
+
+theorem card_ge_card_of_mem_surjOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero α] [Zero β] {s : Finset α} {t : Finset β}
+    {f : α → β} (hf : f ∈ surjOn s t) : #s ≥ #t := by
+  obtain ⟨⟨hf1, hf2⟩, hf3⟩ := by simpa [mem_surjOn, mem_funOn'] using hf
+  exact card_le_card_of_surjOn f hf3
 
 
 end Finset
