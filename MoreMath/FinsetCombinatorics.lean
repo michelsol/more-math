@@ -368,7 +368,7 @@ theorem card_injOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] 
       _ = (n + 1) ! / (n + 1 - m) ! := rfl
 
 
--- Given a finite set t,
+-- Given a finite set t of size n, and k ≤ n
 -- choosing an injection [1,k] → t, is equivalent to
 -- choosing a set s of size k in t, together with an injection [1,k] → s
 def injOn_equiv_sigma_powerset_with_card {β : Type _} [DecidableEq β] [Zero β]
@@ -482,3 +482,15 @@ theorem card_ge_card_of_mem_surjOn {α β : Type _} [DecidableEq α] [DecidableE
 
 
 end Finset
+
+
+
+-- def Set.funOn [Zero β] (s : Set α) (t : Set β) : Set (α → β) :=
+--   {f : α → β | (∀ x ∈ s, f x ∈ t) ∧ ∀ x ∉ s, f x = 0 }
+
+-- def Finset.funOn' [Zero β] (s : Finset α) (t : Finset β) : Finset (α → β) :=
+--   let i : Fintype (s.toSet.funOn t.toSet) := sorry
+--   (s.toSet.funOn t.toSet).toFinset
+
+#check SimpleGraph.Subgraph
+#check Matrix.submatrix

@@ -4,6 +4,31 @@ open Finset
 
 -- Examples where using Fin / Subtype makes proofs harder
 
+example (n : ℕ) : 2 * ∑ k ∈ Icc 0 n, k = n * (n + 1) := by
+  induction' n with n ih
+  . simp
+-- Proof is easy
+  . rw [sum_Icc_succ_top (by omega), mul_add]
+    rw [ih]
+    ring
+
+example (n : ℕ) : 2 * ∑ k : Fin (n + 1), k.val = n * (n + 1) := by
+  have c1 := by simpa using Fin.sum_univ_eq_sum_range id (n + 1)
+  rw [c1]
+  induction' n with n ih
+  . simp
+-- Proof is annoying
+  .
+    sorry
+
+example (n : ℕ) : 2 * ∑ k : Icc 0 n, k.val = n * (n + 1) := by
+  induction' n with n ih
+  . simp
+-- Proof is annoying
+  . sorry
+
+
+
 example (n : ℕ) (x : ℕ → ℕ) (hx : ∀ k ∈ Icc 0 n, x k = k) :
     2 * ∑ k ∈ Icc 0 n, x k = n * (n + 1) := by
   induction' n with n ih
@@ -35,25 +60,3 @@ example (n : ℕ) (x : Icc 0 n → ℕ) (hx : ∀ k, x k = k.val) :
     simp [hk, hx]
   . -- Proof is annoying
     sorry
-
-
-
-example (n : ℕ) : 2 * ∑ k ∈ Icc 0 n, k = n * (n + 1) := by
-  induction' n with n ih
-  . simp
--- Proof is easy
-  . rw [sum_Icc_succ_top (by omega), mul_add]
-    rw [ih]
-    ring
-
-example (n : ℕ) : 2 * ∑ k : Fin (n + 1), k = n * (n + 1) := by
-  induction' n with n ih
-  . simp
--- Proof is annoying
-  . sorry
-
-example (n : ℕ) : 2 * ∑ k : Icc 0 n, k.val = n * (n + 1) := by
-  induction' n with n ih
-  . simp
--- Proof is annoying
-  . sorry
