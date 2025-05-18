@@ -4,27 +4,16 @@ open Nat Function
 
 namespace Finset
 
-theorem card_eq_card_of_set_bijOn {α β : Type _} [Zero α] {s : Finset α} {t : Finset β} {f : α → β} (hf : Set.BijOn f s t) :
-    #s = #t := by
-  apply card_eq_of_equiv
-  exact {
-    toFun := λ ⟨x, hx⟩ ↦ ⟨f x, by simpa using hf.left hx⟩
-    invFun := λ ⟨y, hy⟩ ↦ ⟨f.invFunOn s y, invFunOn_mem (hf.right.right hy)⟩
-    left_inv := by intro ⟨x, hx⟩; simpa using hf.invOn_invFunOn.left hx
-    right_inv := by intro ⟨y, hy⟩; simpa using hf.invOn_invFunOn.right hy
-  }
-
 -- The finite set of functions from a finite set s to a finite set t. (mapping to zero elsewhere)
-noncomputable def funOn {α β : Type _} [DecidableEq α] [Zero β] (s : Finset α) (t : Finset β) : Finset (α → β) :=
+def funOn {α β : Type _} [DecidableEq α] [Zero β] (s : Finset α) (t : Finset β) : Finset (α → β) :=
   let F := {f : α → β | ∀ x, if x ∈ s then f x ∈ t else f x = 0}
-  let g : F ≃ (s → t) := {
-      toFun := λ ⟨f, hf⟩ ⟨x, hx⟩ ↦ ⟨f x, by simpa [hx] using hf x⟩
-      invFun := λ f ↦ ⟨λ x ↦ if hx : x ∈ s then (f ⟨x, hx⟩).1 else 0, by intro x; by_cases hx : x ∈ s <;> simp [hx]⟩
-      left_inv := by intro ⟨f, hf⟩; ext x; specialize hf x; by_cases hx : x ∈ s <;> simp [hx] at hf ⊢; simp [hf]
-      right_inv := by intro f; simp
+  let g : (s → t) ≃ F := {
+      toFun := λ f ↦ ⟨λ x ↦ if hx : x ∈ s then (f ⟨x, hx⟩).1 else 0, by intro x; by_cases hx : x ∈ s <;> simp [hx]⟩
+      invFun := λ ⟨f, hf⟩ ⟨x, hx⟩ ↦ ⟨f x, by simpa [hx] using hf x⟩
+      left_inv := by intro f; simp
+      right_inv := by intro ⟨f, hf⟩; ext x; specialize hf x; by_cases hx : x ∈ s <;> simp [hx] at hf ⊢; simp [hf]
     }
-  letI := g.finite_iff.mpr inferInstance
-  letI := Fintype.ofFinite F
+  letI := Fintype.ofEquiv (s → t) g
   F.toFinset
 
 theorem mem_funOn {α β : Type _} [DecidableEq α] [Zero β] {s : Finset α} {t : Finset β}
@@ -107,13 +96,23 @@ theorem card_funOn {α β : Type _} [DecidableEq α] [Zero β] (s : Finset α) (
 
 
 -- Bijections between finite sets
-noncomputable def bijOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β]
+def bijOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β]
     (s : Finset α) (t : Finset β) : Finset (α → β) :=
   {f ∈ funOn s t | Set.BijOn f s t}
 
 theorem mem_bijOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] {s : Finset α} {t : Finset β}
     (f : α → β) : f ∈ bijOn s t ↔ (f ∈ funOn s t ∧ Set.BijOn f s t) := by
   simp [bijOn]
+
+theorem card_eq_card_of_set_bijOn {α β : Type _} [Zero α] {s : Finset α} {t : Finset β} {f : α → β} (hf : Set.BijOn f s t) :
+    #s = #t := by
+  apply card_eq_of_equiv
+  exact {
+    toFun := λ ⟨x, hx⟩ ↦ ⟨f x, by simpa using hf.left hx⟩
+    invFun := λ ⟨y, hy⟩ ↦ ⟨f.invFunOn s y, invFunOn_mem (hf.right.right hy)⟩
+    left_inv := by intro ⟨x, hx⟩; simpa using hf.invOn_invFunOn.left hx
+    right_inv := by intro ⟨y, hy⟩; simpa using hf.invOn_invFunOn.right hy
+  }
 
 theorem card_eq_card_of_bijOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero α] [Zero β] {s : Finset α} {t : Finset β}
     {f : α → β} (hf : f ∈ bijOn s t) : #s = #t := by
@@ -242,7 +241,7 @@ theorem card_bijOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β] 
 
 
 -- Injections between finite sets
-noncomputable def injOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β]
+def injOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β]
     (s : Finset α) (t : Finset β) : Finset (α → β) :=
   {f ∈ funOn s t | Set.InjOn f s}
 
@@ -467,7 +466,7 @@ theorem sum_Icc_choose_eq_two_pow (n : ℕ) : ∑ k ∈ Icc 0 n, n.choose k = 2 
     _ = 2 ^ n := by simp
 
 -- Surjections between finite sets
-noncomputable def surjOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β]
+def surjOn {α β : Type _} [DecidableEq α] [DecidableEq β] [Zero β]
     (s : Finset α) (t : Finset β) : Finset (α → β) :=
   {f ∈ funOn s t | Set.SurjOn f s t}
 
@@ -485,12 +484,10 @@ end Finset
 
 
 
--- def Set.funOn [Zero β] (s : Set α) (t : Set β) : Set (α → β) :=
---   {f : α → β | (∀ x ∈ s, f x ∈ t) ∧ ∀ x ∉ s, f x = 0 }
-
--- def Finset.funOn' [Zero β] (s : Finset α) (t : Finset β) : Finset (α → β) :=
---   let i : Fintype (s.toSet.funOn t.toSet) := sorry
---   (s.toSet.funOn t.toSet).toFinset
-
 #check SimpleGraph.Subgraph
 #check Matrix.submatrix
+
+open Finset
+-- #eval funOn (Icc (0 : Fin 4) 3) (Icc 0 1)
+-- #eval bijOn (Icc (0 : Fin 4) 3) (Icc 0 3)
+-- #eval ∑ k ∈ bijOn (Icc 0 3) (Icc 0 3), 1
