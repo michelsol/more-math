@@ -240,7 +240,7 @@ theorem taylor_one_div_one_sub_bigO_order0 (𝕜 : Type u) [RCLike 𝕜] :
 theorem taylor_one_div_one_sub_bigO_order1 (𝕜 : Type u) [RCLike 𝕜] :
     ∃ (E : 𝕜 → 𝕜), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
     ∀ᶠ x in 𝓝 0, 1 / (1 - x) = 1 + x + E x * x ^ 2 := by
-  convert taylor_one_div_one_sub_bigO 𝕜 1 using 9 with C E hE x
+  convert taylor_one_div_one_sub_bigO 𝕜 1 using 9 with E C hE x
   have h1 : range 2 = {0, 1} := by decide
   simp [h1]
 
@@ -297,7 +297,7 @@ theorem taylor_one_div_one_add_bigO (𝕜 : Type u) [RCLike 𝕜] (n : ℕ) :
 theorem taylor_one_div_one_add_bigO_order0 (𝕜 : Type u) [RCLike 𝕜] :
     ∃ (E : 𝕜 → 𝕜), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
     ∀ᶠ x in 𝓝 0, 1 / (1 + x) = 1 + E x * x := by
-  convert taylor_one_div_one_add_bigO 𝕜 0 using 9 with C E hE x
+  convert taylor_one_div_one_add_bigO 𝕜 0 using 9 with E C hE x
   have h1 : range 2 = {0, 1} := by decide
   simp [h1]
 
@@ -305,7 +305,7 @@ theorem taylor_one_div_one_add_bigO_order0 (𝕜 : Type u) [RCLike 𝕜] :
 theorem taylor_one_div_one_add_bigO_order1 (𝕜 : Type u) [RCLike 𝕜] :
     ∃ (E : 𝕜 → 𝕜), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
     ∀ᶠ x in 𝓝 0, 1 / (1 + x) = 1 - x + E x * x ^ 2 := by
-  convert taylor_one_div_one_add_bigO 𝕜 1 using 10 with C E hE x
+  convert taylor_one_div_one_add_bigO 𝕜 1 using 10 with E C hE x
   have h1 : range 2 = {0, 1} := by decide
   simp [h1]
   ring
@@ -388,15 +388,15 @@ theorem taylor_rlog_one_sub_bigO (n : ℕ) :
 theorem taylor_rlog_one_sub_bigO_order0 :
     ∃ (E : ℝ → ℝ), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
     ∀ᶠ x in 𝓝 0, log (1 - x) = E x * x := by
-  convert taylor_rlog_one_sub_bigO 0 using 9 with C E hE x
+  convert taylor_rlog_one_sub_bigO 0 using 9 with E C hE x
   have h1 : range 1 = {0} := by decide
   simp [h1]
 
-/-- `log (1 - x) = -x - x²/2 + O(x²)` as `x ⟶ 0`. -/
+/-- `log (1 - x) = -x + O(x²)` as `x ⟶ 0`. -/
 theorem taylor_rlog_one_sub_bigO_order1 :
     ∃ (E : ℝ → ℝ), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
     ∀ᶠ x in 𝓝 0, log (1 - x) = -x + E x * x ^ 2 := by
-  convert taylor_rlog_one_sub_bigO 1 using 9 with C E hE x
+  convert taylor_rlog_one_sub_bigO 1 using 9 with E C hE x
   have h1 : range 2 = {0, 1} := by decide
   simp [h1]
 
@@ -414,7 +414,7 @@ theorem taylor_rlog_one_sub_littleO_order0 :
   have h1 : range 1 = {0} := by decide
   simp [h1]
 
-/-- `log (1 - x) = -x - x²/2 + o(x)` as `x ⟶ 0`. -/
+/-- `log (1 - x) = -x + o(x)` as `x ⟶ 0`. -/
 theorem taylor_rlog_one_sub_littleO_order1 :
     ∃ (e : ℝ → ℝ) (_ : Tendsto e (𝓝 0) (𝓝 0)),
     ∀ᶠ x in 𝓝 0, log (1 - x) = -x + e x * x := by
@@ -475,15 +475,15 @@ theorem taylor_rlog_one_add_bigO (n : ℕ) :
 theorem taylor_rlog_one_add_bigO_order0 :
     ∃ (E : ℝ → ℝ), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
     ∀ᶠ x in 𝓝 0, log (1 + x) = E x * x := by
-  convert taylor_rlog_one_add_bigO 0 using 9 with C E hE x
+  convert taylor_rlog_one_add_bigO 0 using 9 with E C hE x
   have h1 : range 1 = {0} := by decide
   simp [h1]
 
-/-- `log (1 + x) = x - x²/2 + O(x²)` as `x ⟶ 0`. -/
+/-- `log (1 + x) = x + O(x²)` as `x ⟶ 0`. -/
 theorem taylor_rlog_one_add_bigO_order1 :
     ∃ (E : ℝ → ℝ), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
     ∀ᶠ x in 𝓝 0, log (1 + x) = x + E x * x ^ 2 := by
-  convert taylor_rlog_one_add_bigO 1 using 9 with C E hE x
+  convert taylor_rlog_one_add_bigO 1 using 9 with E C hE x
   have h1 : range 2 = {0, 1} := by decide
   simp [h1]
 
@@ -501,7 +501,7 @@ theorem taylor_rlog_one_add_littleO_order0 :
   have h1 : range 1 = {0} := by decide
   simp [h1]
 
-/-- `log (1 + x) = x - x²/2 + o(x)` as `x ⟶ 0`. -/
+/-- `log (1 + x) = x + o(x)` as `x ⟶ 0`. -/
 theorem taylor_rlog_one_add_littleO_order1 :
     ∃ (e : ℝ → ℝ) (_ : Tendsto e (𝓝 0) (𝓝 0)),
     ∀ᶠ x in 𝓝 0, log (1 + x) = x + e x * x := by
@@ -556,7 +556,7 @@ theorem taylor_rexp_bigO (n : ℕ) :
 theorem taylor_rexp_bigO_order0 :
     ∃ (E : ℝ → ℝ), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
     ∀ᶠ x in 𝓝 0, exp x = 1 + E x * x := by
-  convert taylor_rexp_bigO 0 using 9 with C E hE x
+  convert taylor_rexp_bigO 0 using 9 with E C hE x
   have h1 : range 1 = {0} := by decide
   simp [h1]
 
@@ -564,7 +564,7 @@ theorem taylor_rexp_bigO_order0 :
 theorem taylor_rexp_bigO_order1 :
     ∃ (E : ℝ → ℝ), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
     ∀ᶠ x in 𝓝 0, exp x = 1 + x + E x * x ^ 2 := by
-  convert taylor_rexp_bigO 1 using 9 with C E hE x
+  convert taylor_rexp_bigO 1 using 9 with E C hE x
   have h1 : range 2 = {0, 1} := by decide
   simp [h1]
 
@@ -707,7 +707,7 @@ theorem taylor_one_add_rpow_bigO (n : ℕ) (a : ℝ) :
 theorem taylor_one_add_rpow_bigO_order0 (a : ℝ) :
     ∃ (E : ℝ → ℝ), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
     ∀ᶠ x in 𝓝 0, (1 + x) ^ a = 1 + E x * x := by
-  convert taylor_one_add_rpow_bigO 0 a using 9 with C E hE x
+  convert taylor_one_add_rpow_bigO 0 a using 9 with E C hE x
   have h1 : range 1 = {0} := by decide
   simp [h1]
 
@@ -715,7 +715,7 @@ theorem taylor_one_add_rpow_bigO_order0 (a : ℝ) :
 theorem taylor_one_add_rpow_bigO_order1 (a : ℝ) :
     ∃ (E : ℝ → ℝ), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
     ∀ᶠ x in 𝓝 0, (1 + x) ^ a = 1 + a * x + E x * x ^ 2 := by
-  convert taylor_one_add_rpow_bigO 1 a using 9 with C E hE x
+  convert taylor_one_add_rpow_bigO 1 a using 9 with E C hE x
   have h1 : range 2 = {0, 1} := by decide
   simp [h1]
 
@@ -750,14 +750,14 @@ open Real Nat
 theorem taylor_sqrt_one_add_bigO (n : ℕ) :
     ∃ (E : ℝ → ℝ), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
     ∀ᶠ x in 𝓝 0, √(1 + x) = ∑ k ∈ range (n + 1), (∏ j ∈ range k, ((1 : ℝ) / 2 - j)) / k ! * x ^ k + E x * x ^ (n + 1) := by
-  convert taylor_one_add_rpow_bigO n (1 / 2) using 9 with C E hE x
+  convert taylor_one_add_rpow_bigO n (1 / 2) using 9 with E C hE x
   apply sqrt_eq_rpow
 
 /-- `√(1 + x) = 1 + O(x)` as `x ⟶ 0`. -/
 theorem taylor_sqrt_one_add_bigO_order0 :
     ∃ (E : ℝ → ℝ), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
     ∀ᶠ x in 𝓝 0, √(1 + x) = 1 + E x * x := by
-  convert taylor_sqrt_one_add_bigO 0 using 9 with C E hE x
+  convert taylor_sqrt_one_add_bigO 0 using 9 with E C hE x
   have h1 : range 1 = {0} := by decide
   simp [h1]
 
@@ -765,7 +765,7 @@ theorem taylor_sqrt_one_add_bigO_order0 :
 theorem taylor_sqrt_one_add_bigO_order1 :
     ∃ (E : ℝ → ℝ), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
     ∀ᶠ x in 𝓝 0, √(1 + x) = 1 + x / 2 + E x * x ^ 2 := by
-  convert taylor_sqrt_one_add_bigO 1 using 9 with C E hE x
+  convert taylor_sqrt_one_add_bigO 1 using 9 with E C hE x
   have h1 : range 2 = {0, 1} := by decide
   field_simp [h1]
 
@@ -793,4 +793,180 @@ theorem taylor_sqrt_one_add_littleO_order1 :
 
 end taylor_sqrt_one_add
 
--- TODO trigonometric and hyperbolic functions
+section taylor_ccos
+open Complex Nat
+
+/-- `cos(z) = 1 - z²/2 + ... + (-1)ᵐ z²ᵐ/(2m)! + O(z²ᵐ⁺²)` as `z ⟶ 0`. -/
+theorem taylor_ccos_bigO (m : ℕ) :
+    ∃ (E : ℂ → ℂ), ∃ (C : ℝ) (_ : ∀ᶠ z in 𝓝 0, ‖E z‖ ≤ C),
+    ∀ᶠ z in 𝓝 0, cos z = ∑ k ∈ range (m + 1), (-1) ^ k / (2 * k) ! * z ^ (2 * k) + E z * z ^ (2 * m + 2) := by
+  -- TODO: use `Complex.hasSum_cos` instead of reproving the formula
+  convert taylor_bigO_of_series_at_zero_of_differentiableOn_ℂ cos 1 (by norm_num)
+    differentiable_cos.differentiableOn (2 * m + 1) using 10 with E C hE z
+  have h1 : range (2 * m + 1 + 1) = (range (m + 1)).biUnion (λ k ↦ {2 * k, 2 * k + 1}) := by
+    ext k
+    constructor <;> intro hk <;> simp at hk ⊢
+    . use k / 2; omega
+    . omega
+  rw [h1, sum_biUnion]
+  swap
+  . intro i hi j hj hij s hsi hsj x hx
+    specialize hsi hx
+    specialize hsj hx
+    simp at hsi hsj
+    omega
+  apply sum_congr rfl
+  intro k hk
+  rw [sum_pair (by omega)]
+  calc
+    _ = (-1) ^ k / (2 * k) ! * z ^ (2 * k) + 0 / (2 * k + 1) ! * z ^ (2 * k + 1) := by simp
+    _ = _ := by
+      have c1 k : iteratedDeriv (2 * k) cos 0 = (-1) ^ k ∧ iteratedDeriv (2 * k + 1) cos 0 = 0 := by
+        induction' k with k ih
+        . simp
+        . constructor
+          . calc
+              _ = iteratedDeriv (2 * k + 2) cos 0 := by ring_nf
+              _ = -iteratedDeriv (2 * k) cos 0 := by simp [iteratedDeriv_succ', iteratedDeriv_neg]
+              _ = _ := by rw [ih.left]; ring
+          . calc
+              _ = iteratedDeriv (2 * k + 3) cos 0 := by ring_nf
+              _ = -iteratedDeriv (2 * k + 1) cos 0 := by simp [iteratedDeriv_succ', iteratedDeriv_neg]
+              _ = _ := by rw [ih.right]; ring
+      symm
+      congr 3
+      . exact (c1 k).left
+      . exact (c1 k).right
+
+/-- `cos(z) = 1 - z²/2 + ... + (-1)ᵐ z²ᵐ/(2m)! + o(z²ᵐ⁺¹)` as `z ⟶ 0`. -/
+theorem taylor_ccos_littleO (m : ℕ) :
+    ∃ (e : ℂ → ℂ) (_ : Tendsto e (𝓝 0) (𝓝 0)),
+    ∀ᶠ z in 𝓝 0, cos z = ∑ k ∈ range (m + 1), (-1) ^ k / (2 * k) ! * z ^ (2 * k) + e z * z ^ (2 * m + 1) := by
+  exact taylor_littleO_of_bigO_at_zero (taylor_ccos_bigO m)
+
+end taylor_ccos
+
+section taylor_rcos
+open Real Nat
+
+/-- `cos(x) = 1 - x²/2 + ... + (-1)ᵐ x²ᵐ/(2m)! + O(x²ᵐ⁺²)` as `x ⟶ 0`. -/
+theorem taylor_rcos_bigO (m : ℕ) :
+    ∃ (E : ℝ → ℝ), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
+    ∀ᶠ x in 𝓝 0, cos x = ∑ k ∈ range (m + 1), (-1) ^ k / (2 * k) ! * x ^ (2 * k) + E x * x ^ (2 * m + 2) := by
+  have ⟨E, C, hE, h1⟩ := taylor_ccos_bigO m
+  apply taylor_bigO_at_zero_ℝ_of_ℂ
+    (λ x ↦ cos x) (λ x ↦ ∑ k ∈ range (m + 1), (-1) ^ k / (2 * k) ! * x ^ (2 * k)) (2 * m + 1)
+  use E, C, hE
+  rw [Metric.eventually_nhds_iff] at h1 ⊢
+  obtain ⟨ε, hε, h1⟩ := h1
+  use ε, hε
+  intro x hx
+  simp at hx
+  specialize h1 (y := x) (by simpa using hx)
+  convert h1 using 1
+  . simp
+  . norm_cast
+
+/-- `cos(x) = 1 + O(x²)` as `x ⟶ 0`. -/
+theorem taylor_rcos_bigO_order1 :
+    ∃ (E : ℝ → ℝ), ∃ (C : ℝ) (_ : ∀ᶠ x in 𝓝 0, ‖E x‖ ≤ C),
+    ∀ᶠ x in 𝓝 0, cos x = 1 + E x * x ^ 2 := by
+  convert taylor_rcos_bigO 0 using 9 with E C hE x
+  have h1 : range 1 = {0} := by decide
+  simp [h1]
+
+/-- `cos(x) = 1 - x²/2 + ... + (-1)ᵐ x²ᵐ/(2m)! + o(x²ᵐ⁺¹)` as `x ⟶ 0`. -/
+theorem taylor_rcos_littleO (m : ℕ) :
+    ∃ (e : ℝ → ℝ) (_ : Tendsto e (𝓝 0) (𝓝 0)),
+    ∀ᶠ x in 𝓝 0, cos x = ∑ k ∈ range (m + 1), (-1) ^ k / (2 * k) ! * x ^ (2 * k) + e x * x ^ (2 * m + 1) := by
+  exact taylor_littleO_of_bigO_at_zero (taylor_rcos_bigO m)
+
+/-- `cos(x) = 1 + o(x)` as `x ⟶ 0`. -/
+theorem taylor_rcos_littleO_order1 :
+    ∃ (e : ℝ → ℝ) (_ : Tendsto e (𝓝 0) (𝓝 0)),
+    ∀ᶠ x in 𝓝 0, cos x = 1 + e x * x := by
+  convert taylor_rcos_littleO 0 using 7 with e he x
+  have h1 : range 1 = {0} := by decide
+  simp [h1]
+
+end taylor_rcos
+
+
+-- Add other trigonometric and hyperbolic functions
+
+
+open Real in
+/-- (1 + 1/n)^n ⟶ e -/
+example : Tendsto (λ n : ℕ ↦ (1 + (1 : ℝ) / n) ^ n) atTop (𝓝 (exp 1)) := by
+  suffices ∃ (e : ℝ → ℝ) (_ : Tendsto e (𝓝 0) (𝓝 0)),
+      ∀ᶠ x in 𝓝[≠] 0, (1 + x) ^ (1 / x) = exp 1 + e x by
+    obtain ⟨e, he, h1⟩ := this
+    let f (n : ℕ) := exp 1 + e (1 / n)
+    have h2 : Tendsto f atTop (𝓝 (exp 1)) := by
+      suffices Tendsto f atTop (𝓝 (exp 1 + 0)) from by convert this using 2; simp
+      apply Tendsto.add
+      . exact tendsto_const_nhds
+      . show Tendsto (e ∘ λ n : ℕ ↦ 1 / n) atTop (𝓝 0)
+        apply Tendsto.comp he
+        exact tendsto_one_div_atTop_nhds_zero_nat
+    convert h2 using 0
+    apply Iff.symm (tendsto_congr' ?_)
+    rw [Filter.Eventually, Metric.mem_nhdsWithin_iff] at h1
+    obtain ⟨ε, hε, h1⟩ := h1
+    rw [EventuallyEq, eventually_atTop]
+    use Nat.ceil (1 / ε + 1)
+    intro k hk
+    replace hk : k ≥ 1 / ε + 1 := Nat.le_of_ceil_le hk
+    have hε' : 1 / ε > 0 := by positivity
+    have hk' : (k : ℝ) > 0 := by linarith
+    replace hk : k > 1 / ε := by linarith
+    replace hk : (1 : ℝ) / k < ε := by refine (one_div_lt hε hk').mp hk
+    have h3 : (1 : ℝ) / k ∈ Metric.ball 0 ε ∩ {0}ᶜ := by
+      constructor
+      . simpa using hk
+      . norm_cast at hk'; simp; omega
+    specialize h1 h3
+    dsimp at h1
+    symm
+    convert h1 using 3
+    calc
+      ((1 : ℝ) + 1 / k) ^ k = (1 + 1 / k) ^ (k : ℝ) := by norm_cast
+      _ = _ := by congr 1; simp
+
+
+-- (1 + x) ^ (1 / x) = exp ((1 / x) * log (1 + x)) = exp ((1 / x) * (x + o(x)))
+-- = exp (1 + o(1)) = exp 1 * exp (o(1)) = exp 1 * (1 + o(1)) = exp 1 + o(1)
+  have ⟨e1, he1, h1⟩ := taylor_rlog_one_add_littleO_order1
+  have ⟨e2, he2, h2⟩ := taylor_rexp_littleO_order0
+  replace h2 := he1.eventually h2
+  use λ x ↦ exp 1 * e2 (e1 x)
+  use by
+    convert_to Tendsto (λ x ↦ rexp 1 * e2 (e1 x)) (𝓝 0) (𝓝 (rexp 1 * 0)) using 2
+    . ring
+    apply Tendsto.const_mul
+    apply he2.comp he1
+  rw [Metric.eventually_nhds_iff] at h1 h2
+  obtain ⟨ε1, hε1, h1⟩ := h1
+  obtain ⟨ε2, hε2, h2⟩ := h2
+  rw [Filter.Eventually, Metric.mem_nhdsWithin_iff]
+  use ε1 ⊓ ε2 ⊓ 1, by simp [hε1, hε2]
+  intro x ⟨hx1, hx2⟩
+  simp only [Metric.mem_ball, lt_inf_iff] at hx1
+  simp at hx2
+  specialize h1 hx1.left.left
+  specialize h2 hx1.left.right
+  calc
+    (1 + x) ^ (1 / x) = exp (log (1 + x) * (1 / x)) := by
+      refine rpow_def_of_pos ?_ (1 / x)
+      replace hx1 := hx1.right
+      simp [abs_lt] at hx1
+      linarith
+    _ = exp (1 / x * log (1 + x)) := by ring_nf
+    _ = exp (1 / x * (x + e1 x * x)) := by simp [h1]
+    _ = exp (1 + e1 x) := by
+      congr 1
+      field_simp
+      ring
+    _ = exp 1 * exp (e1 x) := by apply exp_add
+    _ = exp 1 * (1 + e2 (e1 x)) := by rw [h2]
+    _ = _ := by ring

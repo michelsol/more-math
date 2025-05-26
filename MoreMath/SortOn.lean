@@ -43,6 +43,9 @@ theorem apply_argmax_le {α β : Type _} [LinearOrder β] (f : α → β) (s : F
   simpa [upperBounds, apply_argmax f s H] using h.2
 
 
+-- NOTE : I realized that Nat.nth existed, which can be useful in many situations.
+
+
 
 -- The next lemmas are useful to index and sort the elements of a sequence or set
 
