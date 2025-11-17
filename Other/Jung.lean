@@ -272,114 +272,279 @@ open Bornology Metric ENNReal Finset InnerProductSpace in
 /-- (Jung’s theorem) Suppose $$S\subset\mathbb{R}^{d}$$ is bounded with diameter $$\text{diam}(S)$$.
 Then $S$ is contained in a closed ball of radius $$(\frac{d}{2d+2})^{\frac{1}{2}}\text{diam}(S)$$
 -/
-theorem jung_theorem
-    {d : ℕ} (S : Set (EuclideanSpace ℝ (Fin d))) (hS : IsBounded S) (hS2 : S.Nonempty) :
-    ∃ c, S ⊆ closedBall c ((d / (2 * d + 2) : ℝ) ^ (1 / 2) * diam S) := by
+theorem jung_theorem_of_finite_of_card_le_d_plus_1
+    {d : ℕ} (S : Set (EuclideanSpace ℝ (Fin d)))
+    (hS : IsBounded S) (hS2 : S.Nonempty)
+    (hS3 : S.Finite) (hS4 : Nat.card S ≥ 2) (hS5 : Nat.card S ≤ d + 1) :
+    ∃ c, S ⊆ closedBall c (√(d / (2 * d + 2) : ℝ) * diam S) := by
 
-  -- need to handle separately the trivial case  $$|S| = 1$$ .
   -- We first prove Jung’s theorem in the case $$S$$ is finite and $$\left|S\right|\leq d+1$$.
-  by_cases h1 : S.Finite ∧ Nat.card S ≤ d + 1
-  · obtain ⟨h1, h2⟩ := h1
-    have h1' := h1.fintype
-    replace h2 : S.toFinset.card ≤ d + 1 := by
-      convert h2 using 1; symm; apply Nat.card_eq_card_toFinset
 
-    -- Let $$c$$ denote the center of the ball containing $$S$$ of minimum radius $$r$$.
-    obtain ⟨c, r, h3, h4⟩ := smallest_enclosing_ball_of_isBounded S hS hS2
+  -- Let $$c$$ denote the center of the ball containing $$S$$ of minimum radius $$r$$.
+  obtain ⟨c, r, h3, h4⟩ := smallest_enclosing_ball_of_isBounded S hS hS2
 
-    -- Translating $$S$$, we may assume without loss of generality that $$c=0$$.
-    wlog hc : c = 0
-    · sorry
+  use c
+  -- Translating $$S$$, we may assume without loss of generality that $$c=0$$.
+  wlog hc : c = 0
+  · let T := (· - c) '' S
+    specialize this T
+    specialize this (by
+      rw [isBounded_image_iff]
+      rw [isBounded_iff] at hS
+      obtain ⟨R, hR⟩ := hS
+      use ‖c‖ + R + ‖c‖
+      intro x hx y hy
+      calc
+        dist (x - c) (y - c) ≤ dist (x - c) x + dist x y + dist y (y - c) := by apply dist_triangle4
+        _ = ‖(x - c) - x‖ + dist x y + ‖y - (y - c)‖ := by congr 1
+        _ = ‖c‖ + dist x y + ‖c‖ := by (iterate 2 congr 1) <;> simp
+        _ ≤ ‖c‖ + R + ‖c‖ := by gcongr 2; exact hR hx hy)
+    specialize this (by simpa [T] using hS2)
+    specialize this (Set.Finite.image (· - c) hS3)
+    specialize this (by
+      convert hS4 using 1
+      apply Set.ncard_image_of_injective S
+      apply add_left_injective)
+    specialize this (by
+      convert hS5 using 1
+      apply Set.ncard_image_of_injective S
+      apply add_left_injective)
+    specialize this 0 r
+    specialize this (by
+      simp only [T, Set.image_subset_iff]
+      convert h3 using 1
+      ext x
+      simp [dist_eq_norm])
+    specialize this (by
+      intro c' r' h1
+      apply h4 (c' + c) r'
+      simp only [T, Set.image_subset_iff] at h1
+      convert h1 using 1
+      ext x
+      simp only [mem_closedBall, dist_eq_norm, Set.mem_preimage]
+      congr! 2
+      module)
+    specialize this rfl
+    simp only [T, Set.image_subset_iff] at this
+    convert this using 1
+    ext x
+    simp only [mem_closedBall, dist_eq_norm, Set.mem_preimage]
+    congr! 2
+    · module
+    · unfold diam
+      congr 1
+      iterate 2 rw [EMetric.diam_eq_sSup]
+      congr 1
+      ext x
+      simp
 
-    -- Enumerate the elements of $$\left\{x\in S: \left\|x\right\|=r\right\}$$ by
-    -- $$x_{1},\cdots,x_{n}$$ (and note that $$n\geq 2$$, as shown by the lemma).
-    let S' := {x ∈ S.toFinset | ‖x‖ = r}
-    let n := S'.card
-    have hn : n ≥ 2 := by -- here we need the fact that $$|S|\geq 2$$
-      sorry
-    let x' : Icc 1 n ≃ S' := ((Icc 1 n).equivFinOfCardEq (by simp [n])).trans S'.equivFin.symm
-    let y k : Icc 1 n := if hk : k ∈ Icc 1 n then ⟨k, hk⟩ else ⟨1, by simp; omega⟩
-    -- writing the enumaration as a composition of elementary functions
-    -- so as to simplify the proofs of range / injectivity properties later on
-    let x := Subtype.val ∘ x' ∘ y
 
-    -- $$c$$ lies in the convex hull of $$x_{1},\cdots,x_{n}$$
-    have h5 : c ∈ convexHull ℝ (Set.range x) := by
-      sorry -- seems visually intuitive but I don't yet know how to prove it
+  have h1' := hS3.fintype
+  have h1 : S.toFinset.card ≥ 2 := by convert hS4 using 1; symm; apply Nat.card_eq_card_toFinset
+  replace h2 : S.toFinset.card ≤ d + 1 := by
+    convert hS5 using 1; symm; apply Nat.card_eq_card_toFinset
 
-    -- and therefore we can write
-    -- $$\displaystyle c=\sum_{k=1}^{n}\lambda_{k}x_{k}$$, with $$\lambda_{k}\geq0$$,
-    -- and $$ \sum_{k=1}^{n}\lambda_{k}=1$$
+  -- Enumerate the elements of $$\left\{x\in S: \left\|x\right\|=r\right\}$$ by
+  -- $$x_{1},\cdots,x_{n}$$ (and note that $$n\geq 2$$, as shown by the lemma).
+  let S' := {x ∈ S.toFinset | ‖x‖ = r}
+  have hS' : S'.toSet ⊆ S := by simp [S']
+  let n := S'.card
+  have hn : n ≥ 2 := by
+    sorry -- by the lemma saying that at least two points lie on the boundary sphere
+  let x' : Icc 1 n ≃ S' := ((Icc 1 n).equivFinOfCardEq (by simp [n])).trans S'.equivFin.symm
+  let y k : Icc 1 n := if hk : k ∈ Icc 1 n then ⟨k, hk⟩ else ⟨1, by simp; omega⟩
+  -- writing the enumeration as a composition of elementary functions
+  -- so as to simplify the proofs of range / injectivity properties later on
+  let x := Subtype.val ∘ x' ∘ y
+  have hy1 : Set.MapsTo y (Icc 1 n) .univ := by intro k hk; simp
+  have hx'1 : Set.MapsTo x'.toFun .univ .univ := by simp
+  have hval1 : Set.MapsTo (Subtype.val : S' → _) .univ S' := by simp
+  have hx1 : Set.MapsTo x (Icc 1 n) S' := hval1.comp (hx'1.comp hy1)
+  have hx2 : Set.InjOn x (Icc 1 n) := by
+    have hy2 : Set.InjOn y (Icc 1 n) := by
+      intro i hi j hj hij
+      unfold y at hij
+      split_ifs at hij with g1 g2 g2
+      all_goals simp at hi hj hij g1 g2; omega
+    have hx'2 : Set.InjOn x'.toFun .univ := by simp
+    have hval2 : Set.InjOn (Subtype.val : S' → _) .univ := by simp
+    exact hval2.comp (hx'2.comp hy2 hy1) (hx'1.comp hy1)
+  have hx3 : Set.SurjOn x (Icc 1 n) S' := by
+    have hy3 : Set.SurjOn y (Icc 1 n) .univ := by
+      intro ⟨z, hz⟩ hz2
+      simp [y] at hz ⊢
+      use z
+      split_ifs
+      simp
+      omega
+    have hx'3 : Set.SurjOn x'.toFun .univ .univ := x'.surjective.surjOn .univ
+    have hval3 : Set.SurjOn (Subtype.val : S' → _) .univ S' := by simp [Set.SurjOn]
+    exact hval3.comp (hx'3.comp hy3)
+  have hx4 : (Icc 1 n).image x = S' := by
+    apply Finset.coe_inj.mp
+    simpa using hx3.image_eq_of_mapsTo hx1
 
-    obtain ⟨l, h6, h7, h8⟩ : ∃ (l : ℕ → ℝ),
-        (∀ k ∈ Icc 1 n, l k ≥ 0) ∧ ∑ k ∈ Icc 1 n, l k = 1 ∧ c = ∑ k ∈ Icc 1 n, l k • x k := by
-      sorry
 
-    have h9 (i : ℕ) (hi : i ∈ Icc 1 n) := by
-      simp at hi
-      exact calc
-      1 - l i = ∑ k ∈ Icc 1 n, l k - l i := by rw [h7]
-      _ = ∑ k ∈ Icc 1 n \ {i}, l k + l i - l i := by
-        have h : {i} ⊆ Icc 1 n := by intro _; simp; omega
-        simp [←sum_sdiff h]
-      _ = ∑ k ∈ Icc 1 n \ {i}, l k * 1 := by ring_nf
-      _ ≥ ∑ k ∈ Icc 1 n \ {i}, l k * (‖x k - x i‖ ^ 2 / diam S ^ 2) := by
-        gcongr 2 with k hk
-        · exact h6 k (by simp at hk ⊢; omega)
-        · have : diam S > 0 := sorry -- because $$|S|\geq 2$$
-          suffices dist (x k) (x i) ^ 2 ≤ diam S ^ 2 by field_simp; simpa using this
-          gcongr 1
-          apply dist_le_diam_of_mem hS
-          · sorry
-          · sorry
-      _ = (1 / diam S ^ 2) * ∑ k ∈ Icc 1 n \ {i}, l k * ‖x k - x i‖ ^ 2 := by
-        rw [mul_sum]
+  -- It follows from the uniqueness of the minimum enclosing ball of S that
+  -- $$c$$ lies in the convex hull of $$x_{1},\cdots,x_{n}$$
+  have h5 : c ∈ convexHull ℝ ((Icc 1 n).image x) := by
+    sorry -- nontrivial proof, I think idea is to pick a point outside the convex hull,
+          -- consider the projection of c onto the convex hull, and
+          -- construct a smaller enclosing ball, contradicting minimality of r
+
+  -- and therefore we can write
+  -- $$\displaystyle c=\sum_{k=1}^{n}\lambda_{k}x_{k}$$, with $$\lambda_{k}\geq0$$,
+  -- and $$ \sum_{k=1}^{n}\lambda_{k}=1$$
+
+  obtain ⟨l, h6, h7, h8⟩ : ∃ (l : ℕ → ℝ),
+      (∀ k ∈ Icc 1 n, l k ≥ 0) ∧ ∑ k ∈ Icc 1 n, l k = 1 ∧ c = ∑ k ∈ Icc 1 n, l k • x k := by
+    rw [mem_convexHull'] at h5
+    obtain ⟨w, g1, g2, g3⟩ := h5
+    use w ∘ x
+    split_ands
+    · intro k hk
+      exact g1 (x k) (mem_image_of_mem _ hk)
+    · convert g2 using 1
+      apply sum_nbij x
+      · intro k hk; exact mem_image_of_mem _ hk
+      · exact hx2
+      · convert hx3 using 1; rw [hx4]
+      · simp
+    · symm
+      convert g3 using 1
+      apply sum_nbij x
+      · intro k hk; exact mem_image_of_mem _ hk
+      · exact hx2
+      · convert hx3 using 1; rw [hx4]
+      · intro k hk
+        congr 1
+
+  have h8' : diam S > 0 := by
+    sorry -- from hS4 and definition of diam, picking a pair of distinct points in S
+
+  have h9 (i : ℕ) (hi : i ∈ Icc 1 n) := by
+    simp at hi
+    exact calc
+    1 - l i = ∑ k ∈ Icc 1 n, l k - l i := by rw [h7]
+    _ = ∑ k ∈ Icc 1 n \ {i}, l k + l i - l i := by
+      have h : {i} ⊆ Icc 1 n := by intro _; simp; omega
+      simp [←sum_sdiff h]
+    _ = ∑ k ∈ Icc 1 n \ {i}, l k * 1 := by ring_nf
+    _ ≥ ∑ k ∈ Icc 1 n \ {i}, l k * (‖x k - x i‖ ^ 2 / diam S ^ 2) := by
+      gcongr 2 with k hk
+      · exact h6 k (by simp at hk ⊢; omega)
+      · suffices dist (x k) (x i) ^ 2 ≤ diam S ^ 2 by field_simp; simpa using this
+        gcongr 1
+        apply dist_le_diam_of_mem hS
+        · apply hS'
+          apply hx1
+          simp at hk ⊢
+          omega
+        · apply hS'
+          apply hx1
+          simp at hk ⊢
+          omega
+    _ = (1 / diam S ^ 2) * ∑ k ∈ Icc 1 n \ {i}, l k * ‖x k - x i‖ ^ 2 := by
+      rw [mul_sum]
+      congr! 1 with k hk
+      field_simp
+    _ = (1 / diam S ^ 2) * ∑ k ∈ Icc 1 n, l k * ‖x k - x i‖ ^ 2 := by
+      congr 1
+      have h : {i} ⊆ Icc 1 n := by intro _; simp; omega
+      simp [←sum_sdiff h]
+    _ = (1 / diam S ^ 2) * ∑ k ∈ Icc 1 n,
+          (l k * ‖x k‖ ^ 2 + l k * ‖x i‖ ^ 2 - 2 * (l k * ⟪x k, x i⟫_ℝ)) := by
+      congr! 2 with k hk
+      rw [norm_sub_sq_real]
+      ring
+    _ = (1 / diam S ^ 2) * (
+          ∑ k ∈ Icc 1 n, l k * ‖x k‖ ^ 2 + ∑ k ∈ Icc 1 n, l k * ‖x i‖ ^ 2 -
+          2 * ∑ k ∈ Icc 1 n, l k * ⟪x k, x i⟫_ℝ) := by
+      congr 1
+      conv_lhs => rw [sum_sub_distrib, sum_add_distrib]
+      congr 2
+      rw [mul_sum]
+    _ = (1 / diam S ^ 2) * (
+          ∑ k ∈ Icc 1 n, l k * r ^ 2 + ∑ k ∈ Icc 1 n, l k * r ^ 2 -
+          2 * ∑ k ∈ Icc 1 n, l k * ⟪x k, x i⟫_ℝ) := by
+      congr! 6 with k hk
+      · suffices x k ∈ S' by simp [S'] at this; simp [this]
+        apply hx1
+        simp at hk ⊢
+        omega
+      · suffices x i ∈ S' by simp [S'] at this; simp [this]
+        apply hx1
+        simp at hi ⊢
+        omega
+    _ = (1 / diam S ^ 2) * (
+          r ^ 2 * ∑ k ∈ Icc 1 n, l k + r ^ 2 * ∑ k ∈ Icc 1 n, l k -
+          2 * ∑ k ∈ Icc 1 n, l k * ⟪x k, x i⟫_ℝ) := by
+      congr 3
+      all_goals
+      · rw [mul_sum]
         congr! 1 with k hk
-        field_simp
-      _ = (1 / diam S ^ 2) * ∑ k ∈ Icc 1 n, l k * ‖x k - x i‖ ^ 2 := by
-        congr 1
-        have h : {i} ⊆ Icc 1 n := by intro _; simp; omega
-        simp [←sum_sdiff h]
-      _ = (1 / diam S ^ 2) * ∑ k ∈ Icc 1 n,
-            (l k * ‖x k‖ ^ 2 + l k * ‖x i‖ ^ 2 - 2 * (l k * ⟪x k, x i⟫_ℝ)) := by
-        congr! 2 with k hk
-        rw [norm_sub_sq_real]
         ring
-      _ = (1 / diam S ^ 2) * (
-            ∑ k ∈ Icc 1 n, l k * ‖x k‖ ^ 2 + ∑ k ∈ Icc 1 n, l k * ‖x i‖ ^ 2 -
-            2 * ∑ k ∈ Icc 1 n, l k * ⟪x k, x i⟫_ℝ) := by
-        congr 1
-        conv_lhs => rw [sum_sub_distrib, sum_add_distrib]
-        congr 2
-        rw [mul_sum]
-      _ = (1 / diam S ^ 2) * (
-            ∑ k ∈ Icc 1 n, l k * r ^ 2 + ∑ k ∈ Icc 1 n, l k * r ^ 2 -
-            2 * ∑ k ∈ Icc 1 n, l k * ⟪x k, x i⟫_ℝ) := by
-        congr! 6 with k hk
-        · sorry
-        · sorry
-      _ = (1 / diam S ^ 2) * (
-            r ^ 2 * ∑ k ∈ Icc 1 n, l k + r ^ 2 * ∑ k ∈ Icc 1 n, l k -
-            2 * ∑ k ∈ Icc 1 n, l k * ⟪x k, x i⟫_ℝ) := by
-        congr 3
-        all_goals
-        · rw [mul_sum]
-          congr! 1 with k hk
-          ring
-      _ = (1 / diam S ^ 2) * (2 * r ^ 2 - 2 * ∑ k ∈ Icc 1 n, l k * ⟪x k, x i⟫_ℝ) := by
-        congr 2
-        rw [h7]
-        ring
-      _ = (1 / diam S ^ 2) * (2 * r ^ 2 - 2 * (∑ k ∈ Icc 1 n, l k * ⟪x k, x i⟫_ℝ)) := by
-        ring
-      _ = (1 / diam S ^ 2) * (2 * r ^ 2 - 2 * (∑ k ∈ Icc 1 n, ⟪l k • x k, x i⟫_ℝ)) := by
-        congr! 4 with k hk
-        rw [real_inner_smul_left]
-      _ = (1 / diam S ^ 2) * (2 * r ^ 2 - 2 * (⟪∑ k ∈ Icc 1 n, l k • x k, x i⟫_ℝ)) := by
-        congr! 4 with k hk
-        rw [sum_inner]
-      _ = (1 / diam S ^ 2) * (2 * r ^ 2) := by simp [←h8, hc]
-      _ = 2 * r ^ 2 / diam S ^ 2 := by field_simp
+    _ = (1 / diam S ^ 2) * (2 * r ^ 2 - 2 * ∑ k ∈ Icc 1 n, l k * ⟪x k, x i⟫_ℝ) := by
+      congr 2
+      rw [h7]
+      ring
+    _ = (1 / diam S ^ 2) * (2 * r ^ 2 - 2 * (∑ k ∈ Icc 1 n, l k * ⟪x k, x i⟫_ℝ)) := by
+      ring
+    _ = (1 / diam S ^ 2) * (2 * r ^ 2 - 2 * (∑ k ∈ Icc 1 n, ⟪l k • x k, x i⟫_ℝ)) := by
+      congr! 4 with k hk
+      rw [real_inner_smul_left]
+    _ = (1 / diam S ^ 2) * (2 * r ^ 2 - 2 * (⟪∑ k ∈ Icc 1 n, l k • x k, x i⟫_ℝ)) := by
+      congr! 4 with k hk
+      rw [sum_inner]
+    _ = (1 / diam S ^ 2) * (2 * r ^ 2) := by simp [←h8, hc]
+    _ = 2 * r ^ 2 / diam S ^ 2 := by field_simp
 
-    sorry
-  · sorry
+-- Summing $$1-\lambda_{i}$$ over $$i\in\left\{1,\cdots,n\right\}$$, we obtain
+-- $$\displaystyle n-1\geq\frac{2nr^{2}}{\text{diam}(S)^{2}} $$
+
+  have h10 := calc
+    n - 1 = ∑ i ∈ Icc 1 n, 1 - ∑ i ∈ Icc 1 n, l i := by simp [h7]
+    _ = ∑ i ∈ Icc 1 n, (1 - l i) := by rw [sum_sub_distrib]
+    _ ≥ ∑ i ∈ Icc 1 n, (2 * r ^ 2 / diam S ^ 2) := by
+      gcongr 2 with i hi
+      exact h9 i hi
+    _ = n * (2 * r ^ 2 / diam S ^ 2) := by simp [sum_const]
+    _ = 2 * n * r ^ 2 / diam S ^ 2 := by ring
+
+
+-- $$\Longleftrightarrow r\leq\left(\frac{n-1}{2n}\right)^{\frac{1}{2}}\text{diam}(S)$$
+
+-- $$\leq\left(\frac{d}{2d+2}\right)^{\frac{1}{2}}\text{diam}(S)$$
+
+  have h11 := calc
+    r = √(r ^ 2) := by
+      symm
+      apply Real.sqrt_sq
+      calc
+        0 ≤ _ := by apply dist_nonneg
+        _ ≤ r := h3 hS2.choose_spec
+    _ ≤ √(((n - 1) / (2 * n)) * diam S ^ 2) := by
+      apply Real.sqrt_le_sqrt
+      field_simp at h10 ⊢
+      simpa using h10
+    _ = √((n - 1) / (2 * n)) * √(diam S ^ 2) := by
+      rw [Real.sqrt_mul]
+      field_simp
+      simp
+      omega
+    _ = √((n - 1) / (2 * n)) * diam S := by
+      congr 1
+      apply Real.sqrt_sq
+      apply diam_nonneg
+    _ ≤ √(d / (2 * d + 2)) * diam S := by
+      gcongr 2
+      field_simp
+      have hn1 : n ≥ 1 := by omega
+      have hn2 : n ≤ d + 1 := calc
+        #S' ≤ #S.toFinset := by apply Finset.card_le_card; simpa using hS'
+        _ ≤ d + 1 := h2
+      rify at hn1 hn2
+      nlinarith
+
+  apply h3.trans
+  exact closedBall_subset_closedBall h11
