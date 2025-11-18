@@ -271,14 +271,34 @@ theorem unique_smallest_enclosing_ball_of_isBounded
 open Bornology Metric ENNReal Finset InnerProductSpace in
 /-- (Jung’s theorem) Suppose $$S\subset\mathbb{R}^{d}$$ is bounded with diameter $$\text{diam}(S)$$.
 Then $S$ is contained in a closed ball of radius $$(\frac{d}{2d+2})^{\frac{1}{2}}\text{diam}(S)$$
+We first prove Jung’s theorem in the case $$\left|S\right|\leq d+1$$.
 -/
-theorem jung_theorem_of_finite_of_card_le_d_plus_1
+theorem jung_theorem_of_card_le_d_succ
     {d : ℕ} (S : Set (EuclideanSpace ℝ (Fin d)))
-    (hS : IsBounded S) (hS2 : S.Nonempty)
-    (hS3 : S.Finite) (hS4 : Nat.card S ≥ 2) (hS5 : Nat.card S ≤ d + 1) :
+    (hS : IsBounded S) (hS3 : S.encard ≤ d + 1) :
     ∃ c, S ⊆ closedBall c (√(d / (2 * d + 2) : ℝ) * diam S) := by
 
-  -- We first prove Jung’s theorem in the case $$S$$ is finite and $$\left|S\right|\leq d+1$$.
+  -- Handle the trivial cases where $$S$$ has cardinality 0 or 1
+  obtain hS4 | hS4 | hS4 : S.encard = 0 ∨ S.encard = 1 ∨ S.encard ≥ 2 := by
+    have := (Set.finite_of_encard_le_coe hS3).fintype
+    unfold Set.encard
+    rw [ENat.card_eq_coe_natCard]
+    norm_cast
+    omega
+  · rw [Set.encard_eq_zero] at hS4
+    subst hS4
+    simp
+  · have := (Set.finite_of_encard_le_coe hS3).fintype
+    have h1 : S.toFinset.card = 1 := by apply ENat.coe_inj.mp; convert hS4 using 1; simp
+    have ⟨a, ha⟩ := card_eq_one.mp h1
+    rw [←coe_eq_singleton, Set.coe_toFinset] at ha
+    subst ha
+    simp
+
+  have hS2 : S.Nonempty := by
+    apply Set.encard_ne_zero.mp
+    by_contra! h1
+    simp [h1] at hS4
 
   -- Let $$c$$ denote the center of the ball containing $$S$$ of minimum radius $$r$$.
   obtain ⟨c, r, h3, h4⟩ := smallest_enclosing_ball_of_isBounded S hS hS2
@@ -299,16 +319,15 @@ theorem jung_theorem_of_finite_of_card_le_d_plus_1
         _ = ‖(x - c) - x‖ + dist x y + ‖y - (y - c)‖ := by congr 1
         _ = ‖c‖ + dist x y + ‖c‖ := by (iterate 2 congr 1) <;> simp
         _ ≤ ‖c‖ + R + ‖c‖ := by gcongr 2; exact hR hx hy)
-    specialize this (by simpa [T] using hS2)
-    specialize this (Set.Finite.image (· - c) hS3)
+    specialize this (by
+      convert hS3 using 1
+      apply ENat.card_image_of_injective
+      apply add_left_injective)
     specialize this (by
       convert hS4 using 1
-      apply Set.ncard_image_of_injective S
+      apply ENat.card_image_of_injective
       apply add_left_injective)
-    specialize this (by
-      convert hS5 using 1
-      apply Set.ncard_image_of_injective S
-      apply add_left_injective)
+    specialize this (by simpa [T] using hS2)
     specialize this 0 r
     specialize this (by
       simp only [T, Set.image_subset_iff]
@@ -338,11 +357,16 @@ theorem jung_theorem_of_finite_of_card_le_d_plus_1
       ext x
       simp
 
-
-  have h1' := hS3.fintype
-  have h1 : S.toFinset.card ≥ 2 := by convert hS4 using 1; symm; apply Nat.card_eq_card_toFinset
+  have h1' := (Set.finite_of_encard_le_coe hS3).fintype
+  have h1 : S.toFinset.card ≥ 2 := by
+    apply ENat.coe_le_coe.mp
+    change _ ≥ _
+    convert hS4 using 1
+    simp
   replace h2 : S.toFinset.card ≤ d + 1 := by
-    convert hS5 using 1; symm; apply Nat.card_eq_card_toFinset
+    apply ENat.coe_le_coe.mp
+    convert hS3 using 1
+    simp
 
   -- Enumerate the elements of $$\left\{x\in S: \left\|x\right\|=r\right\}$$ by
   -- $$x_{1},\cdots,x_{n}$$ (and note that $$n\geq 2$$, as shown by the lemma).
@@ -420,7 +444,14 @@ theorem jung_theorem_of_finite_of_card_le_d_plus_1
         congr 1
 
   have h8' : diam S > 0 := by
-    sorry -- from hS4 and definition of diam, picking a pair of distinct points in S
+    let a : Fin (Fintype.card S) ↪ S := h1'.equivFin.symm.toEmbedding
+    let b : Fin 2 ↪ Fin (Fintype.card S) := Fin.castLEEmb (by simpa [←Set.toFinset_card] using h1)
+    let x0 := a (b ⟨0, by simp⟩)
+    let x1 := a (b ⟨1, by simp⟩)
+    let x : x0 ≠ x1 := (a.injective.comp b.injective).ne (by simp)
+    calc
+      0 < dist x0 x1 := by apply dist_pos.mpr; exact x
+      _ ≤ diam S := dist_le_diam_of_mem hS x0.2 x1.2
 
   have h9 (i : ℕ) (hi : i ∈ Icc 1 n) := by
     simp at hi
@@ -548,3 +579,46 @@ theorem jung_theorem_of_finite_of_card_le_d_plus_1
 
   apply h3.trans
   exact closedBall_subset_closedBall h11
+
+
+open Bornology Metric ENNReal Finset InnerProductSpace in
+/-- (Jung’s theorem) Suppose $$S\subset\mathbb{R}^{d}$$ is bounded with diameter $$\text{diam}(S)$$.
+Then $S$ is contained in a closed ball of radius $$(\frac{d}{2d+2})^{\frac{1}{2}}\text{diam}(S)$$
+-/
+theorem jung_theorem_of_card_ge_d_succ
+    {d : ℕ} (S : Set (EuclideanSpace ℝ (Fin d)))
+    (hS : IsBounded S) (hS2 : ENat.card S ≥ d + 1) :
+    ∃ c, S ⊆ closedBall c (√(d / (2 * d + 2) : ℝ) * diam S) := by
+  let F (x : S) := closedBall x.val (√(d / (2 * d + 2) : ℝ) * diam S)
+
+  suffices (⋂ i, F i).Nonempty by
+    let c := this.choose
+    have hc : c ∈ (⋂ y : S, F y) := this.choose_spec
+    simp [F] at hc
+    use c
+    simpa [mem_closedBall, dist_comm] using hc
+
+  apply Convex.helly_theorem_compact (𝕜 := ℝ)
+  · simpa using hS2
+  · intro ⟨i, hi⟩
+    apply convex_closedBall
+  · intro ⟨i, hi⟩
+    apply isCompact_closedBall
+  · intro I hI
+    replace hI : #I = d + 1 := by simpa using hI
+    simp only [Set.iInter_coe_set, Set.nonempty_iInter, Set.mem_iInter]
+    obtain ⟨c, hc⟩ := jung_theorem_of_card_le_d_succ (Subtype.val '' I.toSet)
+      (IsBounded.subset hS (Subtype.coe_image_subset S I))
+      (calc
+        _ ≤ I.toSet.encard := by apply Set.encard_image_le
+        _ = _ := by simpa using ENat.coe_inj.mpr hI)
+    rw [Set.image_subset_iff] at hc
+    use c
+    intro i hi hi2
+    specialize hc hi2
+    suffices dist c i ≤ √(d / (2 * d + 2) : ℝ) * diam (S) by simpa [F] using this
+    replace hc : dist c i ≤ √(d / (2 * d + 2) : ℝ) * diam (Subtype.val '' I.toSet) := by
+      simpa [dist_comm] using hc
+    apply le_trans hc
+    gcongr 1
+    exact diam_mono (Subtype.coe_image_subset S I) hS
